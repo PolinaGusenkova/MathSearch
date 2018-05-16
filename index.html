@@ -14,7 +14,11 @@
     <link href = "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel = "stylesheet">
     <link href = "http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel = "stylesheet">
     <link href = "index.css" rel = "stylesheet">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="Libs/bootstrap-tokenfield-master/dist/css/bootstrap-tokenfield.css">
+    <link href="Libs/flexdatalist/jquery.flexdatalist.css" rel="stylesheet">
+
     <!--[if lt IE 9]>
       <script src = "https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src = "https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -28,42 +32,50 @@
     <script src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script src = "Libs/bootstrap3-typeahead/bootstrap3-typeahead.min.js"></script>
     <script src = "Libs/sparql/sparql.js"></script>
-    
+    <script src = "Libs/bootstrap-tokenfield-master/dist/bootstrap-tokenfield.min.js"></script>
+    <script src="Libs/flexdatalist/jquery.flexdatalist.js"></script>
+
     <script src = "http://widget.uservoice.com/5UzptFfvlVZs4fvV4C5lA.js"></script>
     
     <script src = "index.js"></script>
     <script src = "index.custombindings.js"></script>
-    
+
+
   </head>
   <body>
-    
+
     <div class = "container">
       <h1>
         Finding Concepts in Mathematical Formulas
         <sup><small><i>alpha</i></small></sup>
       </h1>
-      
       <form id = "search" class = "panel panel-default navbar-default">
         <div class = "panel-body">
-        
+
           <div class = "form-group">
             <div id = "concept-uri-wrapper" class = "input-group">
-              <input type = "text" id = "concept-uri" data-bind = "value: conceptURI, valueUpdate: 'input', typeahead: concepts"
-                     placeholder = "OntoMathPro concept label or DBpedia concept URI" data-content = "Please enter a search query!" data-placement = "bottom" class = "form-control concepts typeahead">
+              <input type="text" multiple id = "concept-uri"
+                     placeholder="OntoMathPro concept label or DBpedia concept URI"
+                     class="flexdatalist"
+                     data-content = "Please enter a search query!"
+                     data-placement = "bottom"
+                     data-min-length="1"
+                     list="concept-list">
+              <datalist id="concept-list"></datalist>
               <span class="input-group-btn">
                 <button type = "button" id = "btnGo" data-bind = "loading: loadingIndicator.loading" class = "btn btn-primary" data-loading-text = "<i class='fa fa-spinner fa-spin'></i> Please, wait...">
                   Get instances!
                 </button>
               </span>
             </div>
-            
+
             <p id = "examples" class = "help-block">
               Examples: <a>Angle</a>, <a>Ring</a>, <a>Graph</a>, <a>Open set</a>, <a>Prime number</a>, <a>Gamma function</a>, <a>Space</a>
             </p>
           </div>
-          
+
           <hr>
-          
+
           <div id = "context" data-bind = "foreach: segmentTypes">
             <label class = "checkbox-inline">
               <input type = "checkbox" data-bind = "checked: isChecked">
@@ -71,7 +83,7 @@
               <span data-bind = "slideVisible: $root.results.visible" class = "count">(<span data-bind = "text: count"></span>)</span>
             </label>
           </div>
-          
+
         </div>
       </form>
       
@@ -267,6 +279,6 @@
         
       </div>
     </footer>
-    
+
   </body>
 </html>

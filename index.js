@@ -112,7 +112,8 @@ var Application = new (function ()
       )
     .then (function (objResult)
       {
-      var arConcepts = [];
+        var str='';
+        var arConcepts = [];
       objResult.results.bindings.forEach (function (objBinding)
         {
         var strConceptURI = objBinding.concept.value;
@@ -122,9 +123,12 @@ var Application = new (function ()
         if (!hshConcepts [strKey])
           {
           arConcepts [arConcepts.length] = strKey;
+          str += '<option value="'+strKey+'" />';
           hshConcepts [strKey] = strConceptURI;
           }
         })
+          var my_list=document.getElementById("concept-list");
+          my_list.innerHTML = str;
       self.concepts (arConcepts);
       
       self.status ("ready");

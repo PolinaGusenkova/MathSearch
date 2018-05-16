@@ -1,13 +1,12 @@
 ﻿ko.bindingHandlers.typeahead =
   {
-  update: function(elElement, fncValueAccessor)
-    {
-    var arData = fncValueAccessor ();
-    if (typeof (arData) == "function") arData = arData ();
-    
-    if (arData.length == 0) return;
-    $(elElement).typeahead ({source: arData});
-    }
+  update: function(elElement, fncValueAccessor) {
+      var arData = fncValueAccessor();
+      if (typeof (arData) == "function") arData = arData();
+
+      if (arData.length == 0) return;
+      $(elElement).typeahead({source: arData});
+  }
   }
   
 ko.bindingHandlers.loading =
