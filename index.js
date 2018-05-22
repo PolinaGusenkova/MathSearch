@@ -1,30 +1,30 @@
 var Application = new (function ()
   {
   var self = this;
-  
-  this.config = 
+
+  this.config =
     {
     endpointURL: ko.observable ("http://lobachevskii-dml.ru:8890/sparql"),
     useMathJax:  ko.observable (true),
     limit:       ko.observable (25)
     }
-  
+
   this.status = ko.observable("loading"); //loading, ready, result, loadingmore, error
-  
-  this.concepts = ko.observable([]);
-  
-  this.conceptURI = ko.observable("");
-  
-  this.query = 
+
+  this.concepts = ko.observableArray([]);
+
+  this.conceptURI = ko.observableArray([]);
+
+  this.query =
     {
     conceptURI:  ko.observable(""),
     offset: ko.observable(0),
     isAllLoaded: ko.observable(false)
     }
-  
+
   this.instances = ko.observableArray([]);
-  
-  this.segmentTypes = 
+
+  this.segmentTypes =
     [
     new SegmentType ("Axiom"),
     new SegmentType ("Claim"),
@@ -44,23 +44,23 @@ var Application = new (function ()
     {
     self.segmentTypes [objSegmentType.uri] = objSegmentType;
     })
-  
-  this.loadingIndicator = 
+
+  this.loadingIndicator =
     {
     loading: ko.computed(function()
       {
       return (self.status () == "loading" || self.status () == "loadingmore");
       })
     }
-  
-  this.results = 
+
+  this.results =
     {
     visible: ko.computed(function()
       {
       return (self.status () == "result" || self.status () == "loadingmore");
       })
     }
-  
+
   this.errorMessage =
     {
     visible: ko.computed(function()
@@ -69,12 +69,12 @@ var Application = new (function ()
       }),
     text: ko.observable("")
     }
-    
-  this.emptyQueryMessage = 
+
+  this.emptyQueryMessage =
     {
     visible: ko.observable(false)
     }
-  
+
   this.instancesFiltred = ko.computed(function()
     {
     return self.instances().filter (function (objInstance)
@@ -82,14 +82,14 @@ var Application = new (function ()
       return (objInstance.isVisible ());
       });
     })
-    
+
   this.instancesFiltred.count = ko.computed(function()
     {
     return (self.instancesFiltred().length);
     })
-  
+
   this.Details;
-  
+
   var hshConcepts = [];
   this.init = function ()
     {
@@ -122,15 +122,15 @@ var Application = new (function ()
           if (objBinding.label)       strKey = objBinding.label.value;
         if (!hshConcepts [strKey])
           {
-          arConcepts [arConcepts.length] = strKey;
           str += '<option value="'+strKey+'" />';
+          arConcepts [arConcepts.length] = strKey;
           hshConcepts [strKey] = strConceptURI;
           }
         })
-          var my_list=document.getElementById("concept-list");
-          my_list.innerHTML = str;
-      self.concepts (arConcepts);
-      
+          self.concepts(arConcepts);
+          var search_list=document.getElementById("concept-list");
+          search_list.innerHTML = str;
+
       self.status ("ready");
       })
     ["catch"] (function (e)
@@ -140,25 +140,25 @@ var Application = new (function ()
       self.status ("error");
       })
     }
-  
+
   this.searchNew = function (strConceptURI)
     {
     var strConceptURI = strConceptURI || self.conceptURI();
-    
-    if (strConceptURI == "")
+
+    if (strConceptURI=="")
       {
       self.emptyQueryMessage.visible (true);
       return;
       }
-    
+
     self.conceptURI (strConceptURI);
-    
+
     if (self.status () == "loading") return;
-    
+
     self.status ("loading");
-    
+
     self.query.offset (0);
-    
+
     this.search (strConceptURI, 0).then (function (arInstances)
       {
       self.instances (arInstances);
@@ -172,21 +172,21 @@ var Application = new (function ()
       })
 
     }
-  
+
   this.searchMore = function ()
     {
     var strConceptURI = self.query.conceptURI ();
     var intOffset = self.query.offset ();
-    
+
     self.status ("loadingmore");
-    
+
     this.search (strConceptURI, intOffset).then (function (arInstances)
       {
       arInstances.forEach (function (objInstance)
         {
         self.instances.push (objInstance);
         });
-        
+
       self.status ("result");
       })
     ["catch"] (function (e)
@@ -195,14 +195,68 @@ var Application = new (function ()
       self.status ("error");
       })
     }
-  
+
   this.search = function (strConceptURI, intOffset)
     {
+      //JENA
     self.query.conceptURI (strConceptURI);
-    
+
+    /*var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>";
+    //query.setNSPrefix("moc", "http://cll.niimm.ksu.ru/ontologies/mocassin#");
+    query.append("SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType ");
+        query.append("WHERE");
+        query.append("{");
+        query.append("  ?segment rdf:type ?segmentType;");
+        //
+        query.append("           moc:mentions ?entity.");
+        query.append("  ?entity a ?class;");
+        query.append("          moc:hasNotation ?notation."); //punkt2
+        //
+        query.append("  ?notation a moc:Variable;");
+        query.append("            moc:hasLatexSource ?notationLatexSource.");
+        query.append("  ?formula a moc:Formula;");
+        query.append("           moc:hasPart ?notation;");
+        query.append("           moc:hasLatexSource ?formulaLatexSource.");
+        strConceptURI.forEach( function (cptURI) {
+              query.append("  FILTER (str (?class) = '"+ hshConcepts [cptURI]  +"')");
+            }
+        )
+        query.append("}");
+        query.append("LIMIT "+ Application.config.limit() +" ");
+        query.append("OFFSET "+ intOffset +" ");
+    query.replace(/\s+/g, " ") //"Angle" query fix
+    var q = Java.type("Query");
+    q = query.asQuery();
+
+       */
+        //"define input:inference 'ontomath'"+
+          var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#> "+
+          "SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType "+
+          //"FROM <http://lobachevskii-dml.ru/ivm>"+
+          "WHERE"+
+          "  {"+
+            //"?class skos:closeMatch <"+ strConceptURI +"> ."+
+          "  ?segment rdf:type ?segmentType;"+
+          "           moc:mentions ?entity."+
+          "  ?entity a ?class;"+ // option (transitive);"+
+          "          moc:hasNotation ?notation."+
+          "  ?notation a moc:Variable;"+
+          "            moc:hasLatexSource ?notationLatexSource."+
+          "  ?formula a moc:Formula;"+
+          "           moc:hasPart ?notation;"+
+          "           moc:hasLatexSource ?formulaLatexSource.";
+        ko.utils.arrayForEach(self.conceptURI(), function (cptURI) {
+            query += "  FILTER (str (?class) = '" + hshConcepts [cptURI] + "')";
+        });
+          query += "  }"+
+          "LIMIT "+ Application.config.limit() +" "+
+          "OFFSET "+ intOffset +" ";
+          query.replace(/\s+/g, " "); //"Angle" query fix
+        console.log(query);
     return this.get
       (
-      //"define input:inference 'ontomath'"+
+          query
+      /*//"define input:inference 'ontomath'"+
       ("PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>"+
       "SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType "+
       //"FROM <http://lobachevskii-dml.ru/ivm>"+
@@ -210,7 +264,7 @@ var Application = new (function ()
       "  {"+
         //"?class skos:closeMatch <"+ strConceptURI +"> ."+
       "  ?segment rdf:type ?segmentType;"+
-      "           moc:mentions ?entity."+
+      "           moc:mentions ?entity."+ //&& entity2
       "  ?entity a ?class;"+ // option (transitive);"+
       "          moc:hasNotation ?notation."+
       "  ?notation a moc:Variable;"+
@@ -218,11 +272,11 @@ var Application = new (function ()
       "  ?formula a moc:Formula;"+
       "           moc:hasPart ?notation;"+
       "           moc:hasLatexSource ?formulaLatexSource."+
-      "  FILTER (str (?class) = '"+ hshConcepts [strConceptURI]  +"')"+
+      "  FILTER (str (?class) = '"+ hshConcepts [strConceptURI]  +"')"+ //&& class2 = concept2
       "  }"+
       "LIMIT "+ Application.config.limit() +" "+
       "OFFSET "+ intOffset +" ")
-      .replace(/\s+/g, " ") //"Angle" query fix
+      .replace(/\s+/g, " ") //"Angle" query fix*/
       )
     .then (function (objResult)
       {
@@ -236,19 +290,19 @@ var Application = new (function ()
           objInstance.segmentTypeURI       = objBinding.segmentType.value;
         return (objInstance);
         })
-        
+
       self.query.offset (intOffset + arInstances.length);
       self.query.isAllLoaded (arInstances.length < Application.config.limit());
-        
+
       return (arInstances);
       })
     }
-  
+
   this.mj = function (elem)
     {
     if (Application.config.useMathJax()) MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     }
-  
+
   this.get = function (strSPARQL)
     {
     var objSparqler = new SPARQL.Service(self.config.endpointURL());
