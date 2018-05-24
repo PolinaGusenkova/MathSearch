@@ -94,6 +94,24 @@ label.checkbox-inline
   color: darkgray;
   }
 
+select
+{
+  font-family: "Cairo" !important;
+  font-weight: normal;
+  font-size: 16px !important;
+  border-radius: 3px;
+  border: none;
+}
+
+select:focus
+{
+  outline: none !important;
+  box-shadow: 0 0 3pt 2pt white;
+}
+
+
+
+
 h5
   {
   font-family: "Cairo" !important;
@@ -249,4 +267,6 @@ body::-webkit-scrollbar-thumb:active
   border-color: rgba(160, 160, 160, 1);
   background: rgba(216, 216, 216, 1);
   }
-  
+
+
+

@@ -20,9 +20,9 @@ var Application = new (function ()
     conceptURI:  ko.observable(""),
     offset: ko.observable(0),
     isAllLoaded: ko.observable(false),
-    isUnrelated: ko.observable(false)
-    }
-
+    isUnrelated: ko.observable(false),
+    isAscending: ko.observable(false)
+  }
 
   this.instances = ko.observableArray([]);
 
@@ -90,6 +90,20 @@ var Application = new (function ()
     return (self.instancesFiltred().length);
     })
 
+      this.combo = function () {
+
+      }
+
+      this.changeOrder = function(eventID) {
+          if (eventID == 1) {
+              if (self.query.isAscending == false)
+                self.query.isAscending(true);
+              else
+                  self.query.isAscending(false);
+          }
+          console.log("here");
+      }
+
   this.Details;
 
   var hshConcepts = [];
@@ -132,7 +146,7 @@ var Application = new (function ()
           self.concepts(arConcepts);
           var search_list=document.getElementById("concept-list");
           search_list.innerHTML = str;
-          console.log(this.isUnrelated);
+          console.log(self.query.isUnrelated);
       self.status ("ready");
 
       })

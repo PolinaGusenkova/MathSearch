@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="Libs/bootstrap-tokenfield-master/dist/css/bootstrap-tokenfield.css">
     <link href="Libs/flexdatalist/jquery.flexdatalist.css" rel="stylesheet">
     <link href=' http://fonts.googleapis.com/css?family=Cairo' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+
 
     <!--[if lt IE 9]>
       <script src = "https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -95,8 +97,10 @@
           </div>
 
         </div>
+
       </form>
-      
+
+
       <div id = "error" data-bind = "visible: errorMessage.visible" class = "alert alert-danger">
         <h5>Error!</h5>
         <span data-bind = "text: errorMessage.text"></span>
@@ -108,12 +112,42 @@
           <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
           concept instances
           (<span class = "count" data-bind = "text: instancesFiltred.count"></span>):
+          <div align="right" data-bind = "visible: results.visible">
+            <label  class = "checkbox-inline" >
+              <span>Sort by:</span>
+              <select name="sortbyCb"  onChange="combo(this, 'theinput')" > ДАТАБАЙНД НА СЕЛЕКТ
+                <option>Date</option>
+                <option>Author</option>
+              </select>
+
+            </label>
+          </div>
         </h5>
         
         <h5 data-bind = "visible: !instancesFiltred.count()">
           Can’t find <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
           concept instances<span class = "count" data-bind = "visible: instances().length"> in the selected context</span>.
+          <div align="right" data-bind = "visible: results.visible">
+            <label  class = "checkbox-inline" >
+              <span>Sort by:</span>
+              <select class = "styledSel" name="sortbyCb"  onChange="combo(this)" >
+                <option>Date</option>
+                <option>Author</option>
+              </select>
+            </label>
+              <a id = "sortIcon"  class = "btn btn-link" type = "button" title = "Order" data-bind="click: function () { changeOrder(1) }" >
+                <i class = "fas fa-sort-amount-down"></i>
+                <script>
+                    $('#sortIcon').click(function() {
+                        $(this).find('i').toggleClass('fas fa-sort-amount-down fas fa-sort-amount-up')
+                    });
+
+                </script>
+              </a>
+          </div>
         </h5>
+
+
         
         <table data-bind = "visible: instancesFiltred.count" class = "table table-hover">
           <thead>
