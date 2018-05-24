@@ -13,7 +13,7 @@ var Application = new (function ()
 
   this.concepts = ko.observableArray([]);
 
-  this.conceptURI = ko.observableArray([]);
+  this.conceptURI = null;
 
   this.query =
     {
@@ -160,15 +160,19 @@ var Application = new (function ()
 
   this.searchNew = function (strConceptURI)
     {
-    var strConceptURI = strConceptURI || self.conceptURI();
+    var str = $('input.flexdatalist').val().split(',');
+    for (var i = 0; i < str.length; i++) {
+        str[i] = str[i].charAt(0).toUpperCase() + str[i].substr(1);
+    }
+    var strConceptURI = str || strConceptURI;
 
-    if (strConceptURI=="")
+    if (strConceptURI[0] == "")
       {
       self.emptyQueryMessage.visible (true);
       return;
       }
 
-    self.conceptURI (strConceptURI);
+    self.conceptURI = strConceptURI;
 
     if (self.status () == "loading") return;
 
@@ -183,14 +187,14 @@ var Application = new (function ()
       })
     ["catch"] (function (e)
       {
-      //console.log (e);
+      console.log (e);
       self.errorMessage.text (e.message || e.responseText || "");
       self.status ("error");
       })
 
     }
 
-  this.searchMore = function ()
+  /*this.searchMore = function ()
     {
     var strConceptURI = self.query.conceptURI ();
     var intOffset = self.query.offset ();
@@ -212,98 +216,56 @@ var Application = new (function ()
       self.status ("error");
       })
     }
-
+*/
   this.search = function (strConceptURI, intOffset)
     {
-      //JENA
-    self.query.conceptURI (strConceptURI);
-
-    /*var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>";
-    //query.setNSPrefix("moc", "http://cll.niimm.ksu.ru/ontologies/mocassin#");
-    query.append("SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType ");
-        query.append("WHERE");
-        query.append("{");
-        query.append("  ?segment rdf:type ?segmentType;");
-        //
-        query.append("           moc:mentions ?entity.");
-        query.append("  ?entity a ?class;");
-        query.append("          moc:hasNotation ?notation."); //punkt2
-        //
-        query.append("  ?notation a moc:Variable;");
-        query.append("            moc:hasLatexSource ?notationLatexSource.");
-        query.append("  ?formula a moc:Formula;");
-        query.append("           moc:hasPart ?notation;");
-        query.append("           moc:hasLatexSource ?formulaLatexSource.");
-        strConceptURI.forEach( function (cptURI) {
-              query.append("  FILTER (str (?class) = '"+ hshConcepts [cptURI]  +"')");
-            }
-        )
-        query.append("}");
-        query.append("LIMIT "+ Application.config.limit() +" ");
-        query.append("OFFSET "+ intOffset +" ");
-    query.replace(/\s+/g, " ") //"Angle" query fix
-    var q = Java.type("Query");
-    q = query.asQuery();
-
-       */
-        //"define input:inference 'ontomath'"+
+    self.query.conceptURI (strConceptURI.toString().replace(',', ', '));
+    var len = self.conceptURI.length;
+          //"define input:inference 'ontomath'"+
           var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#> "+
-          "SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType "+
+          "SELECT DISTINCT ?formula, ";
+          for (var i = 0; i < len; i++) {
+            query += "?entity"+i+", ?notationLatexSource"+i+", ";
+          }
           //"FROM <http://lobachevskii-dml.ru/ivm>"+
-          "WHERE"+
-          "  {"+
-            //"?class skos:closeMatch <"+ strConceptURI +"> ."+
-          "  ?segment rdf:type ?segmentType;"+
-          "           moc:mentions ?entity."+
-          "  ?entity a ?class;"+ // option (transitive);"+
-          "          moc:hasNotation ?notation."+
-          "  ?notation a moc:Variable;"+
-          "            moc:hasLatexSource ?notationLatexSource."+
-          "  ?formula a moc:Formula;"+
-          "           moc:hasPart ?notation;"+
-          "           moc:hasLatexSource ?formulaLatexSource.";
-        ko.utils.arrayForEach(self.conceptURI(), function (cptURI) {
-            query += "  FILTER (str (?class) = '" + hshConcepts [cptURI] + "')";
-        });
+          query += "?formulaLatexSource, ?segmentType"+
+              " WHERE"+
+              "  {"+
+              "   ?segment rdf:type ?segmentType;";
+        for (var i = 0; i < len; i++) {
+          query+= " moc:mentions ?entity"+i;
+          if (i<len-1) query+=";";
+          else query+=".";
+        }
+        for (var i = 0; i < len; i++) {
+            query += "  ?entity"+i+" a ?class"+i+";"+ // option (transitive);"+
+                "          moc:hasNotation ?notation"+i+"."+
+                "  ?notation"+i+" a moc:Variable;"+
+                "            moc:hasLatexSource ?notationLatexSource"+i+".";
+        }
+        query += " ?formula a moc:Formula;";
+        for (var i = 0; i < len; i++) {
+          query += "  moc:hasPart ?notation"+i+";";
+        }
+        query += "  moc:hasLatexSource ?formulaLatexSource.";
+        for (var i = 0, len = self.conceptURI.length; i < len; i++) {
+            query += "  FILTER (str (?class"+i+") = '" + hshConcepts [self.conceptURI[i]] + "')";
+        }
           query += "  }"+
-          "LIMIT "+ Application.config.limit() +" "+
+          //"LIMIT "+ Application.config.limit() +" "+
           "OFFSET "+ intOffset +" ";
           query.replace(/\s+/g, " "); //"Angle" query fix
         console.log(query);
-    return this.get
-      (
-          query
-      /*//"define input:inference 'ontomath'"+
-      ("PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>"+
-      "SELECT DISTINCT ?formula, ?entity, ?notationLatexSource, ?formulaLatexSource, ?segmentType "+
-      //"FROM <http://lobachevskii-dml.ru/ivm>"+
-      "WHERE"+
-      "  {"+
-        //"?class skos:closeMatch <"+ strConceptURI +"> ."+
-      "  ?segment rdf:type ?segmentType;"+
-      "           moc:mentions ?entity."+ //&& entity2
-      "  ?entity a ?class;"+ // option (transitive);"+
-      "          moc:hasNotation ?notation."+
-      "  ?notation a moc:Variable;"+
-      "            moc:hasLatexSource ?notationLatexSource."+
-      "  ?formula a moc:Formula;"+
-      "           moc:hasPart ?notation;"+
-      "           moc:hasLatexSource ?formulaLatexSource."+
-      "  FILTER (str (?class) = '"+ hshConcepts [strConceptURI]  +"')"+ //&& class2 = concept2
-      "  }"+
-      "LIMIT "+ Application.config.limit() +" "+
-      "OFFSET "+ intOffset +" ")
-      .replace(/\s+/g, " ") //"Angle" query fix*/
-      )
+    return this.get(query)
     .then (function (objResult)
       {
       var arInstances = objResult.results.bindings.map (function (objBinding)
         {
         var objInstance = new Instance ();
-          objInstance.entityURI            = objBinding.entity.value;
+          objInstance.entityURI            = objBinding.entity0.value;
           objInstance.formula.uri          = objBinding.formula.value;
           objInstance.formula.latexSource  = objBinding.formulaLatexSource.value;
-          objInstance.notation.latexSource = objBinding.notationLatexSource.value;
+          objInstance.notation.latexSource = objBinding.notationLatexSource0.value;
           objInstance.segmentTypeURI       = objBinding.segmentType.value;
         return (objInstance);
         })
@@ -642,10 +604,6 @@ $(document).ready(function()
     else
       $("#concept-uri").popover("hide");
     });
-  Application.conceptURI.subscribe (function (strValue)
-    {
-    if (strValue != "") Application.emptyQueryMessage.visible (false);
-    });
   $("#concept-uri").on ("blur", function ()
     {
     Application.emptyQueryMessage.visible (false);
@@ -653,6 +611,7 @@ $(document).ready(function()
     
   $("#examples a").on ("click", function ()
     {
+        $('input.flexdatalist').val($(this).text());
     Application.searchNew ($(this).text());
     });
     
