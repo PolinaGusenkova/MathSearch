@@ -19,8 +19,10 @@ var Application = new (function ()
     {
     conceptURI:  ko.observable(""),
     offset: ko.observable(0),
-    isAllLoaded: ko.observable(false)
+    isAllLoaded: ko.observable(false),
+    isUnrelated: ko.observable(false)
     }
+
 
   this.instances = ko.observableArray([]);
 
@@ -130,8 +132,9 @@ var Application = new (function ()
           self.concepts(arConcepts);
           var search_list=document.getElementById("concept-list");
           search_list.innerHTML = str;
-
+          console.log(this.isUnrelated);
       self.status ("ready");
+
       })
     ["catch"] (function (e)
       {

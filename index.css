@@ -1,6 +1,7 @@
-﻿h1
+﻿
+h1
   {
-  font-family: "Times New Roman";
+  font-family: "Cairo" !important;
   font-weight: normal;
   font-size: 32px;
   }
@@ -13,10 +14,30 @@
     {
     padding-bottom: 12px;
     }
+  #search .flexdatalist
+  {
+    padding-top: 5px;
+    border-color: azure;
+    border-radius: 5px;
+    border_width: 0.5px;
+    line-height: 22px;
+  }
+  #search .flexdatalist-multiple li
+  {
+    line-height: 20px;
+  }
+
+.flexdatalist-multiple li.input-container, .flexdatalist-multiple li.input-container input {
+  border: none;
+  height: auto;
+  padding: 0 0 0 0px;
+  width: 100px;
+}
 
 #concept-uri-wrapper
   {
   margin-left: -3px;
+  border-color: gray;
   }
   
 #examples
@@ -53,8 +74,8 @@
   {
   width: 9em;
   /*border: 1px solid red;*/
-  padding-top: 3px;
-  padding-bottom: 2px;
+  padding-top: 7px;
+  padding-bottom: 4px;
   }
   
 label.checkbox-inline
@@ -62,6 +83,9 @@ label.checkbox-inline
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  font-family: "Cairo";
+  font-weight: normal;
+  font-size: 16px;
   }
 
 #context label .count
@@ -72,9 +96,9 @@ label.checkbox-inline
 
 h5
   {
-  font-family: "Times New Roman";
+  font-family: "Cairo" !important;
   font-weight: normal;
-  font-size: larger;
+  font-size: 16px !important;
   }
 
 #result table th.notation
@@ -167,6 +191,22 @@ h5
   {
   outline: none !important;
   }
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited,
+.btn-primary:focus {
+  font-family: "Cairo";
+  font-weight: bolder;
+  color: ghostwhite !important;
+  border-color: #447298 !important;
+ background-color:#426983 !important;
+  background-image: linear-gradient(to bottom, #49728f, #426983 100%) !important;
+  border-bottom-left-radius: 4px  !important;
+  border-top-left-radius: 4px  !important;
+  margin-left: 10px !important;
+}
 
 @-webkit-keyframes anim1 {from {background-color: lightyellow ;} to {}}
         @keyframes anim1 {from {background-color: lightyellow ;} to {}}
