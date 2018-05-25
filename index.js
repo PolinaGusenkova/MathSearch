@@ -641,5 +641,4 @@ $(document).ready(function()
     if (value) setTimeout (function () {Application.mj()}, 100);
     });
   
-  
   })
