@@ -6,6 +6,10 @@ h1
   font-size: 32px;
   }
 
+.panel {
+  margin-bottom: 0px !important;
+}
+
 #search
   {
   background-color: #F5F5F5;
@@ -13,7 +17,9 @@ h1
   #search .panel-body
     {
     padding-bottom: 12px;
+    margin-bottom: 0.2px !important;
     }
+
   #search .flexdatalist
   {
     padding-top: 5px;
@@ -39,7 +45,7 @@ h1
   margin-left: -3px;
   border-color: gray;
   }
-  
+
 #examples
   {
   font-size: smaller;
@@ -65,8 +71,8 @@ h1
   margin-top: 7px;
   margin-bottom: 5px;
   }
-    
-#context .checkbox-inline+.checkbox-inline 
+
+#context .checkbox-inline+.checkbox-inline
   {
   margin-left: 0;
   }
@@ -77,7 +83,7 @@ h1
   padding-top: 7px;
   padding-bottom: 4px;
   }
-  
+
 label.checkbox-inline
   {
   -moz-user-select: none;
@@ -150,17 +156,17 @@ h5
   padding-bottom: 1em;
   padding-top: 0.5em
   }
-  
+
 #variables-header
   {
   padding-top: 0.5em;
   }
-  
+
 #variables table
   {
   width: auto;
   }
-  
+
 #variables .classlabel
   {
   text-decoration: none;
@@ -187,7 +193,7 @@ h5
   {
   padding-right: 0px;
   }
-  
+
 #footer
   {
   opacity: 0.95;
@@ -250,7 +256,7 @@ body::-webkit-scrollbar
   }
 body::-webkit-scrollbar-track
   {
-  background: white; 
+  background: white;
   }
 body::-webkit-scrollbar-thumb
   {
@@ -327,4 +333,51 @@ body::-webkit-scrollbar-thumb:active
   }
 }
 
+#mypanel {
+  margin-top: 0px;
+  margin-bottom: 0px !important;
+  height: 50px;
+  display: none;
+}
+
+#mypanel .panel-body
+{
+  margin-bottom: 0px !important;
+}
+
+#mypanel p {
+  text-align: center;
+  color: white;
+}
+.slide {
+  margin: 0;
+  padding: 0;
+}
+.pull-me {
+  display: block;
+  position: relative;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80px;
+  height: 20px;
+  color: #505050;
+  font-family: "Cairo";
+  font-size: 14px;
+  background: #F5F5F5;
+  -moz-border-bottom-left-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  margin-bottom: 20px
+}
+
+.pull-me:hover{
+  color: #1b51a2;
+  text-decoration: none;
+}
+
+.pull-me p {
+  text-align: center;
+}
 

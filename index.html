@@ -43,18 +43,16 @@
     <script src = "index.js"></script>
     <script src = "index.custombindings.js"></script>
 
-
   </head>
   <body>
-
     <div class = "container">
+      <div class="pane">
       <h1>
         Finding Concepts in Mathematical Formulas
         <sup><small><i>alpha</i></small></sup>
       </h1>
       <form id = "search" class = "panel panel-default navbar-default">
         <div class = "panel-body">
-
           <div class = "form-group">
             <div id = "concept-uri-wrapper" class = "input-group">
               <input type="text" multiple id = "concept-uri"
@@ -83,9 +81,8 @@
             </div>
             <div>
           </div>
-
-
         </div>
+
           <hr>
 
           <div id = "context" data-bind = "foreach: segmentTypes">
@@ -97,15 +94,24 @@
           </div>
 
         </div>
-
       </form>
-
+      </div>
+      <div id = "mypanel" class="panel panel-default navbar-default">
+        <script>
+            $(document).ready(function() {
+                $('.pull-me').click(function() {
+                    $('#mypanel').slideToggle('slow');
+                    $(this).find('i').toggleClass('fas fa-times-circle fas fa-plus-circle')
+                });
+            });</script>
+      </div>
+      <p class="slide"><a class="pull-me"><i class = "fas fa-plus-circle"></i> Filter</a></p>
 
       <div id = "error" data-bind = "visible: errorMessage.visible" class = "alert alert-danger">
         <h5>Error!</h5>
         <span data-bind = "text: errorMessage.text"></span>
       </div>
-      
+
       <div id = "result" data-bind = "visible: results.visible">
       
         <h5 data-bind = "visible: instancesFiltred.count">
@@ -115,36 +121,26 @@
           <div align="right" data-bind = "visible: results.visible">
             <label  class = "checkbox-inline" >
               <span>Sort by:</span>
-              <select name="sortbyCb"  onChange="combo(this, 'theinput')" > ДАТАБАЙНД НА СЕЛЕКТ
+              <select class = "styledSel" name="sortbyCb"  onChange="combo(this)" >
                 <option>Date</option>
                 <option>Author</option>
               </select>
-
             </label>
+            <a id = "sortIcon"  class = "btn btn-link" type = "button" title = "Order" data-bind="click: function () { changeOrder(1) }" >
+              <i class = "fas fa-sort-amount-down"></i>
+              <script>
+                  $('#sortIcon').click(function() {
+                      $(this).find('i').toggleClass('fas fa-sort-amount-down fas fa-sort-amount-up')
+                  });
+
+              </script>
+            </a>
           </div>
         </h5>
         
         <h5 data-bind = "visible: !instancesFiltred.count()">
           Can’t find <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
           concept instances<span class = "count" data-bind = "visible: instances().length"> in the selected context</span>.
-          <div align="right" data-bind = "visible: results.visible">
-            <label  class = "checkbox-inline" >
-              <span>Sort by:</span>
-              <select class = "styledSel" name="sortbyCb"  onChange="combo(this)" >
-                <option>Date</option>
-                <option>Author</option>
-              </select>
-            </label>
-              <a id = "sortIcon"  class = "btn btn-link" type = "button" title = "Order" data-bind="click: function () { changeOrder(1) }" >
-                <i class = "fas fa-sort-amount-down"></i>
-                <script>
-                    $('#sortIcon').click(function() {
-                        $(this).find('i').toggleClass('fas fa-sort-amount-down fas fa-sort-amount-up')
-                    });
-
-                </script>
-              </a>
-          </div>
         </h5>
 
 
@@ -161,6 +157,9 @@
               <th>
                 <span title = "Document part, which contains the formula" data-toggle = "tooltip">Context</span>
               </th>
+              <th>
+                <span title = "Date of publication" data-toggle = "tooltip">Date</span>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -175,8 +174,9 @@
                 <div data-bind = "text: formula.latexMathJax, visible: $root.config.useMathJax()"></div>
               </td>
               <td data-bind = "text: segmentType().name"></td>
+              <td data-bind = " text: "></td> ЗАПРОС
               <td>
-                <button data-bind = "click: showDetails" class = "btn btn-default show-details">Details...</button>
+                <a data-bind = "click: showDetails"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></a>
               </td>
             </tr>
           </tbody>
@@ -233,9 +233,9 @@
               <div id = "journal" data-bind = "visible: variables.status() == 'loading'" class = "text-muted">
                 <i class = "fa fa-spinner fa-spin"></i> Loading...
               </div>
-              
+
               <div id = "journal" data-bind = "visible: variables.status() == 'error'" class = "text-danger">
-                Error
+                Error!
               </div>
             </div>
             
