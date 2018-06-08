@@ -24,7 +24,7 @@ var Application = new (function ()
     isAscending: ko.observable(false)
   }
 
-  this.instances = ko.observableArray([]);
+  this.instances = ko.observableArray();
 
   this.segmentTypes =
     [
@@ -90,20 +90,6 @@ var Application = new (function ()
     return (self.instancesFiltred().length);
     })
 
-      this.combo = function () {
-
-      }
-
-      this.changeOrder = function(eventID) {
-          if (eventID == 1) {
-              if (self.query.isAscending == false)
-                self.query.isAscending(true);
-              else
-                  self.query.isAscending(false);
-          }
-          console.log("here");
-      }
-
   this.Details;
 
   var hshConcepts = [];
@@ -152,7 +138,7 @@ var Application = new (function ()
       })
     ["catch"] (function (e)
       {
-      //console.log (e);
+      console.log (e);
       self.errorMessage.text (e.message || e.responseText || "");
       self.status ("error");
       })
@@ -182,7 +168,13 @@ var Application = new (function ()
 
     this.search (strConceptURI, 0).then (function (arInstances)
       {
-      self.instances (arInstances);
+        self.instances(arInstances);
+/*
+          arInstances.forEach (function (objInstance)
+          {
+              self.instances.push (objInstance);
+          });
+*/
       self.status ("result");
       })
     ["catch"] (function (e)
@@ -236,9 +228,8 @@ var Application = new (function ()
             query += "?notationLatexSource"+i+" ";
         }
         query += "WHERE  { " +
-            " ?article moc:hasSegment ?segment; rdf:type akt:Article-Reference; akt:included-in-publication ?journal. " +
+            " ?article moc:hasSegment ?segment; rdf:type akt:Article-Reference; akt:included-in-publication ?journal; akt:has-author ?author." +
             "?journal akt:has-date ?year. " +
-            " " +
             " ?segment rdf:type ?segmentType;     moc:mentions ?entity.     " +
             "       ?entity moc:hasNotation ?formula.    " +
             "       ?formula a moc:Formula; ";
@@ -259,7 +250,8 @@ var Application = new (function ()
                 query += " str (?class"+i+") = '" + hshConcepts [self.conceptURI[j]] + "'  ) ";
             }
         }
-        query += " } " +
+        query += "FILTER ( str(?segmentType) != 'http://salt.semanticauthoring.org/ontologies/sdo#Section') " +
+                " } " +
             "} " +
             "} GROUP BY ?formula ?entity ?formulaLatexSource ?year ";
         for (var i = 0; i < len; i++) {
@@ -280,18 +272,18 @@ var Application = new (function ()
         {
         var objInstance = new Instance ();
           for (var i = 0; i < len; i++) {
+              objInstance.entityURI = objBinding.entity.value;
               objInstance.formula.uri = objBinding.formula.value;
               objInstance.formula.latexSource = objBinding.formulaLatexSource.value;
               objInstance.segmentList.segments = objBinding.segments.value;
-              //TODO: latexSource map
               objInstance.notation.latexSource = objBinding.notationLatexSource0.value;
-              objInstance.year = objBinding.year.value;
+              objInstance.date = objBinding.year.value.match (/[0-9]+/)[0];
           }
         return (objInstance);
         })
 
-      self.query.offset (intOffset + arInstances.length);
-      self.query.isAllLoaded (arInstances.length < Application.config.limit());
+      //self.query.offset (intOffset + arInstances.length);
+      //self.query.isAllLoaded (arInstances.length < Application.config.limit());
 
       return (arInstances);
       })
@@ -328,7 +320,8 @@ function SegmentType (strURI, strName)
   {
       return Application.instances().filter (function (objInstance)
       {
-          return (objInstance.segmentList.segmentMap.size)
+        objInstance.segmentList.createArr();
+          return (objInstance.segmentList.segmentArr.indexOf(st) > -1)
       }).length;
   }, st, {deferEvaluation: true})
   /*this.count = ko.computed(function()
@@ -377,33 +370,38 @@ function Instance ()
   this.segmentList =
       {
           segments: "",
-          segmentMap: new Map(),
+          segmentArr: [],
+          createArr: ko.computed(function ()
+          {
+              var segs = this.segmentList.segments.split(" ");
+              this.segmentList.segmentArr = [];
+              for (var i = 0; i <  segs.length; i++) {
+                  this.segmentList.segmentArr.push(this.segmentType( segs[i]));
+              }
+          }, this, {deferEvaluation: true}),
           segmentShow:   ko.computed(function ()
             {
-              var segs = this.segmentList.segments.split(" ");
-              for (var i = 0; i < segs.length; i++) {
-                  this.segmentList.segmentMap.set(segs[i], this.segmentType(segs[i]));
-              }
+              this.segmentList.createArr();
               var str = "";
-              for (var i = 0; i < this.segmentList.segmentMap.size; i++) {
-                  str += this.segmentList.segmentMap.get(segs[i]).name;
-                  if (i < this.segmentList.segmentMap.size - 1) {
-                    str += ", ";
+              for (var i = 0; i < this.segmentList.segmentArr.length; i++) {
+                  if (this.segmentList.segmentArr[i].isChecked() && this.segmentList.segmentArr[i].isChecked) {
+                      str += this.segmentList.segmentArr[i].name + ", ";
                   }
               }
+              str = str.substr(0, str.length-2);
               return (str);
-            }, this, {deferEvaluation: true}),
+            }, this, {deferEvaluation: true})
       }
   this.segmentType = function(segmentTypeURI)
     {
     return (Application.segmentTypes [segmentTypeURI] || {});
     };
 
-  this.year = "";
+  this.date = "";
     
   this.isVisible = ko.computed(function()
     {
-    return (true);
+        return (this.segmentList.segmentShow() != "");
     }, self, {deferEvaluation: true})
   
   this.showDetails = function ()
@@ -418,44 +416,41 @@ function Instance ()
     
     Application.get
       (
-      "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>"+
-      "PREFIX akt: <http://www.aktors.org/ontology/portal#>"+
-      "SELECT DISTINCT ?article, ?title, ?pages, ?journal, ?journaltitle, ?year, ?issuenumber, ?author, ?authorname "+
-      "WHERE"+
-      "  {"+
-     
-      "  ?article moc:hasSegment ?segment;"+
-      "           rdf:type akt:Article-Reference;"+
-      "           akt:has-title ?title;"+
-      "           akt:has-pages ?pages;"+
-      "           akt:included-in-publication ?journal."+
-      
-      "  ?journal akt:has-title ?journaltitle;"+
-      "           akt:has-date ?year;"+
-      "           akt:has-issue-number ?issuenumber."+
-      
-      "  ?article akt:has-author ?author."+
-      "    {"+
-      "    SELECT ?author, MIN (?name) AS ?authorname"+
-      "    WHERE"+
-      "      {"+
-      "      ?author akt:full-name ?name ."+
-      "      FILTER (lang(?name) = 'en')"+
-      "      }"+
-      "    GROUP BY ?author"+
-      "    }"+
-      
-      "  ?segment rdf:type ?t;"+
-      "           moc:mentions <"+ self.entityURI +">."+
-      
-      "  FILTER ( lang(?title) = 'en' )"+
-      "  FILTER ( lang(?journaltitle) = 'en' )"+
-      "  }"
+          "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#>" +
+          " PREFIX akt: <http://www.aktors.org/ontology/portal#>" +
+          " SELECT DISTINCT ?article, ?title, ?pages, ?journal, ?journaltitle, ?year, ?issuenumber, ?author, ?authorname " +
+          " WHERE  {  " +
+          "?article moc:hasSegment ?segment;           " +
+          "rdf:type akt:Article-Reference;           " +
+          "akt:has-title ?title;           " +
+          "akt:has-pages ?pages;           " +
+          "akt:included-in-publication ?journal.  " +
+
+          "?journal akt:has-title ?journaltitle;           " +
+          "akt:has-date ?year;           " +
+          "akt:has-issue-number ?issuenumber.  " +
+
+          "?article akt:has-author ?author.    " +
+          "{    " +
+          "SELECT ?author, MIN (?name) AS ?authorname   " +
+          " WHERE      " +
+          "{      " +
+          "?author akt:full-name ?name .      " +
+          "FILTER (lang(?name) = 'en')      " +
+          "}    GROUP BY ?author    " +
+          "}  " +
+
+          "?segment rdf:type ?t;           " +
+          "moc:mentions <"+ self.entityURI +">.  " +
+
+          "FILTER ( lang(?title) = 'en' )  " +
+          "FILTER ( lang(?journaltitle) = 'en' )  " +
+          "}"
       )
     .then (function (objResult)
       {
       var objBindings = objResult.results.bindings[0];
-      
+      console.log(objResult);
       console.log (objBindings);
       
       objDetails.metadata.article
@@ -664,7 +659,24 @@ $(document).ready(function()
         $('input.flexdatalist').val($(this).text());
     Application.searchNew ($(this).text());
     });
-    
+
+  $("#sortIcon").on ("click", function () {
+      if (Application.query.isAscending()) {
+          Application.query.isAscending(false);
+          Application.instances.sort(
+              function (left, right) {
+                  return left.date == right.date ? 0 : (left.date > right.date ? -1 : 1)
+              })
+      }
+      else {
+          Application.query.isAscending(true);
+          Application.instances.sort(
+              function (left, right) {
+                  return left.date == right.date ? 0 : (left.date < right.date ? -1 : 1)
+              })
+      }
+  })
+
   $("#details").on ("click", ".classlabel", function ()
     {
     Application.searchNew (ko.dataFor(this).classLabel);
