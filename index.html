@@ -194,7 +194,8 @@
                 <img data-bind = "attr: {src: formula.imgSrc, alt: formula.latexSource}, visible: !$root.config.useMathJax()">
                 <div data-bind = "text: formula.latexMathJax, visible: $root.config.useMathJax()"></div>
               </td>
-              <td data-bind = "text: segmentList.segmentShow"></td>
+                <td data-bind = "text: segmentList.segmentShow"></td>
+                <td data-bind = "text: date"></td>
               <td>
                 <a data-bind = "click: showDetails"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></a>
               </td>
