@@ -222,51 +222,71 @@ var Application = new (function ()
     self.query.conceptURI (strConceptURI.toString().replace(',', ', '));
     var len = self.conceptURI.length;
           //"define input:inference 'ontomath'"+
-          var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#> "+
-          "SELECT DISTINCT ?formula, ";
-          for (var i = 0; i < len; i++) {
-            query += "?entity"+i+", ?notationLatexSource"+i+", ";
-          }
-          //"FROM <http://lobachevskii-dml.ru/ivm>"+
-          query += "?formulaLatexSource, ?segmentType"+
-              " WHERE"+
-              "  {"+
-              "   ?segment rdf:type ?segmentType;";
+          var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#> " +
+              "PREFIX akt: <http://www.aktors.org/ontology/portal#> "+
+              "SELECT DISTINCT ?entity ?formula ?year " +
+                    "(sql:GROUP_CONCAT(?segmentType, \" \") AS ?segments) ?formulaLatexSource ";
         for (var i = 0; i < len; i++) {
-          query+= " moc:mentions ?entity"+i;
-          if (i<len-1) query+=";";
-          else query+=".";
+          query += "?notationLatexSource"+i+" ";
+        }
+        query += "WHERE { " +
+            "{ " +
+            "SELECT DISTINCT ?entity ?formula ?year ?segmentType ?formulaLatexSource ";
+        for (var i = 0; i < len; i++) {
+            query += "?notationLatexSource"+i+" ";
+        }
+        query += "WHERE  { " +
+            " ?article moc:hasSegment ?segment; rdf:type akt:Article-Reference; akt:included-in-publication ?journal. " +
+            "?journal akt:has-date ?year. " +
+            " " +
+            " ?segment rdf:type ?segmentType;     moc:mentions ?entity.     " +
+            "       ?entity moc:hasNotation ?formula.    " +
+            "       ?formula a moc:Formula; ";
+        for (var i = 0; i < len; i++) {
+            query += "moc:hasPart ?notation"+i+"; ";
+        }
+        query += "moc:hasLatexSource ?formulaLatexSource. ";
+        for (var i = 0; i < len; i++) {
+            query += "?entity"+i+" a ?class"+i+";    moc:hasNotation ?notation"+i+". " +
+                "           ?notation"+i+" a moc:Variable; moc:hasLatexSource ?notationLatexSource"+i+". ";
         }
         for (var i = 0; i < len; i++) {
-            query += "  ?entity"+i+" a ?class"+i+";"+ // option (transitive);"+
-                "          moc:hasNotation ?notation"+i+"."+
-                "  ?notation"+i+" a moc:Variable;"+
-                "            moc:hasLatexSource ?notationLatexSource"+i+".";
+            query += "FILTER (";
+            for (var j = 0; j < len; j++) {
+              if (j < len-1)
+                query += " str (?class"+i+") = '" + hshConcepts [self.conceptURI[j]] + "' ||";
+              else
+                query += " str (?class"+i+") = '" + hshConcepts [self.conceptURI[j]] + "'  ) ";
+            }
         }
-        query += " ?formula a moc:Formula;";
+        query += " } " +
+            "} " +
+            "} GROUP BY ?formula ?entity ?formulaLatexSource ?year ";
         for (var i = 0; i < len; i++) {
-          query += "  moc:hasPart ?notation"+i+";";
+            query += "?notationLatexSource"+i+" ";
         }
-        query += "  moc:hasLatexSource ?formulaLatexSource.";
-        for (var i = 0, len = self.conceptURI.length; i < len; i++) {
-            query += "  FILTER (str (?class"+i+") = '" + hshConcepts [self.conceptURI[i]] + "')";
-        }
-          query += "  }"+
+        query += "ORDER BY DESC (?year)";
+
           //"LIMIT "+ Application.config.limit() +" "+
-          "OFFSET "+ intOffset +" ";
+          //"OFFSET "+ intOffset +" ";
           query.replace(/\s+/g, " "); //"Angle" query fix
         console.log(query);
+        console.time("q");
     return this.get(query)
     .then (function (objResult)
-      {
-      var arInstances = objResult.results.bindings.map (function (objBinding)
+    {
+      console.timeEnd("q");
+        var arInstances = objResult.results.bindings.map (function (objBinding)
         {
         var objInstance = new Instance ();
-          objInstance.entityURI            = objBinding.entity0.value;
-          objInstance.formula.uri          = objBinding.formula.value;
-          objInstance.formula.latexSource  = objBinding.formulaLatexSource.value;
-          objInstance.notation.latexSource = objBinding.notationLatexSource0.value;
-          objInstance.segmentTypeURI       = objBinding.segmentType.value;
+          for (var i = 0; i < len; i++) {
+              objInstance.formula.uri = objBinding.formula.value;
+              objInstance.formula.latexSource = objBinding.formulaLatexSource.value;
+              objInstance.segmentList.segments = objBinding.segments.value;
+              //TODO: latexSource map
+              objInstance.notation.latexSource = objBinding.notationLatexSource0.value;
+              objInstance.year = objBinding.year.value;
+          }
         return (objInstance);
         })
 
@@ -303,20 +323,27 @@ function SegmentType (strURI, strName)
   this.uri       = "http://cll.niimm.ksu.ru/ontologies/mocassin#" + strURI;
   this.name      = strName || strURI;
   this.isChecked = ko.observable(true);
-  
+
   this.count = ko.computed(function()
+  {
+      return Application.instances().filter (function (objInstance)
+      {
+          return (objInstance.segmentList.segmentMap.size)
+      }).length;
+  }, st, {deferEvaluation: true})
+  /*this.count = ko.computed(function()
     {
     return Application.instances().filter (function (objInstance)
       {
-      return (objInstance.segmentType() == st)
+      return (objInstance.segmentList.size() == st)
       }).length;
-    }, st, {deferEvaluation: true})
+    }, st, {deferEvaluation: true})*/
   }
 
 function Instance ()
   {
   var self = this;
-  
+
   this.entityURI = "";
   
   this.formula = 
@@ -332,7 +359,9 @@ function Instance ()
       return ("$"+ this.formula.latexSource +"$");
       }, this, {deferEvaluation: true})
     }
-  this.notation = 
+
+      this.notationList = new Map();
+  this.notation =
     {
     latexSource: "",
     imgSrc:      ko.computed(function()
@@ -344,16 +373,37 @@ function Instance ()
       return ("$"+ this.notation.latexSource +"$");
       }, this, {deferEvaluation: true})
     }
-  
-  this.segmentTypeURI = "";
-  this.segmentType = ko.computed(function()
+
+  this.segmentList =
+      {
+          segments: "",
+          segmentMap: new Map(),
+          segmentShow:   ko.computed(function ()
+            {
+              var segs = this.segmentList.segments.split(" ");
+              for (var i = 0; i < segs.length; i++) {
+                  this.segmentList.segmentMap.set(segs[i], this.segmentType(segs[i]));
+              }
+              var str = "";
+              for (var i = 0; i < this.segmentList.segmentMap.size; i++) {
+                  str += this.segmentList.segmentMap.get(segs[i]).name;
+                  if (i < this.segmentList.segmentMap.size - 1) {
+                    str += ", ";
+                  }
+              }
+              return (str);
+            }, this, {deferEvaluation: true}),
+      }
+  this.segmentType = function(segmentTypeURI)
     {
-    return (Application.segmentTypes [self.segmentTypeURI] || {});
-    }, self, {deferEvaluation: true})
+    return (Application.segmentTypes [segmentTypeURI] || {});
+    };
+
+  this.year = "";
     
   this.isVisible = ko.computed(function()
     {
-    return (this.segmentType().isChecked && this.segmentType().isChecked());
+    return (true);
     }, self, {deferEvaluation: true})
   
   this.showDetails = function ()

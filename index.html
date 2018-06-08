@@ -144,7 +144,7 @@
         </h5>
 
 
-        
+
         <table data-bind = "visible: instancesFiltred.count" class = "table table-hover">
           <thead>
             <tr>
@@ -173,8 +173,7 @@
                 <img data-bind = "attr: {src: formula.imgSrc, alt: formula.latexSource}, visible: !$root.config.useMathJax()">
                 <div data-bind = "text: formula.latexMathJax, visible: $root.config.useMathJax()"></div>
               </td>
-              <td data-bind = "text: segmentType().name"></td>
-              <td data-bind = " text: "></td> ЗАПРОС
+              <td data-bind = "text: segmentList.segmentShow"></td>
               <td>
                 <a data-bind = "click: showDetails"><i class="fa fa-info-circle fa-lg" aria-hidden="true"></i></a>
               </td>
@@ -282,7 +281,7 @@
 
     <a href="#0" class="cd-top js-cd-top">Top</a>
     <script src="interface.js"></script>
-      
+
     <footer id = "footer" class = "navbar navbar-default navbar-fixed-bottom container">
       <div class = ""> 
         <p class = "navbar-text">
