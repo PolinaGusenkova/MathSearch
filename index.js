@@ -4,9 +4,6 @@ var Application = new (function ()
   var bottomDateFltr;
   var roofDateFltr;
 
-  this.isUnrelated = ko.observable(false), //галочка unrelated
-  this.isAscending = ko.observable(false) //порядок сортировки
-
 
   this.config =
     {
@@ -26,6 +23,8 @@ var Application = new (function ()
     conceptURI:  ko.observable(""),
     offset: ko.observable(0),
     isAllLoaded: ko.observable(false),
+    isUnrelated: ko.observable(false), //галочка unrelated
+    isAscending: ko.observable(false) //порядок сортировки
   }
 
   this.instances = ko.observableArray();
