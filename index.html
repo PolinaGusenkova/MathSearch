@@ -105,7 +105,7 @@
                list="author-list">
         <datalist id="author-list"></datalist>
 
-        <label class = "filterLbl">Publisher: </label>
+        <label class = "filterLbl">Journal: </label>
         <input type="text"
                id = "publFltr"
                placeholder="Enter publisher"
@@ -115,7 +115,7 @@
                list="publisher-list">
         <datalist id="publisher-list"></datalist>
 
-        <button type = "button" id = "btnFilter"  class = "btn btn-primary">
+        <button type = "button" id = "btnFilter"  class = "btn btn-primary" data-bind="click: DateFilter.count">
           Filter
         </button>
 

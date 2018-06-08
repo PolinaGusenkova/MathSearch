@@ -98,7 +98,7 @@ h1
   }
 #context .checkbox-inline
   {
-  width: 10em;
+  width: 8em;
   /*border: 1px solid red;*/
   padding-top: 4px;
   padding-bottom: 2px;
@@ -249,9 +249,10 @@ h5
 
 #btnFilter{
   display: inline-block;
-  font-size: 16px;
+  font-size: 14px;
   height: 25px;
   padding: 0px 3px 0px 3px;
+  float: right;
 }
 
 
@@ -361,10 +362,11 @@ body::-webkit-scrollbar-thumb:active
 #mypanel {
   margin-top: 0px;
   margin-bottom: 0px !important;
-  height: 44px;
+  height: max-content;
   display: none;
     padding-top: 7px;
     padding-bottom: 7px;
+  padding-right: 15px;
 
 }
 
@@ -410,7 +412,7 @@ body::-webkit-scrollbar-thumb:active
 }
 
 #bottomDateFltr, #roofDateFltr {
-    width: 50px;
+    width: 5%;
 }
 
 .filterLbl{
@@ -429,4 +431,8 @@ body::-webkit-scrollbar-thumb:active
     border_width: .05px; !important;
     margin-left: 5px;
   padding-left: 3px;
+}
+
+#publFltr-flexdatalist{
+  width: 45%;
 }

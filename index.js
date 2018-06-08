@@ -1,9 +1,11 @@
 var Application = new (function ()
   {
-  var self = this;
-  var bottomDateFltr;
-  var roofDateFltr;
+  var self = this
 
+  this.bottomDateFltr = '0';
+  this.roofDateFltr = '3000';
+  this.authorFltr = '';
+  this.journalFltr = '';
 
   this.config =
     {
@@ -49,6 +51,8 @@ var Application = new (function ()
     {
     self.segmentTypes [objSegmentType.uri] = objSegmentType;
     })
+
+      this.df = new DateFilter();
 
   this.loadingIndicator =
     {
@@ -337,6 +341,21 @@ function SegmentType (strURI, strName)
     }, st, {deferEvaluation: true})*/
   }
 
+/*
+function DateFilter () {
+    var st = this;
+
+    this.isClicked = ko.observable(false);
+
+    this.count = ko.computed(function () {
+        return Application.instances().filter(function (objInstance) {
+            console.log((objInstance.date <= Application.roofDateFltr && objInstance.date >= Application.bottomDateFltr));
+            return ((objInstance.date <= Application.roofDateFltr && objInstance.date >= Application.bottomDateFltr))
+        }).length;
+    }, st, {deferEvaluation: true})
+}
+*/
+
 function Instance ()
   {
   var self = this;
@@ -402,12 +421,11 @@ function Instance ()
     };
 
   this.date = "";
-    
   this.isVisible = ko.computed(function()
     {
         return (this.segmentList.segmentShow() != "");
     }, self, {deferEvaluation: true})
-  
+
   this.showDetails = function ()
     {
     var objDetails = Application.Details;
@@ -630,19 +648,29 @@ $(document).ready(function()
     Application.searchNew ();
     });
 
-      $("#btnFilter").on ("click", function ()
-      {
-        var bot = document.getElementById("bottomDateFltr");
-        var roof = document.getElementById("roofDateFltr");    //TODO: ФИЛЬТРАЦИЯ
-        self.bottomDateFltr = bot.value;
-        self.roofDateFltr = roof.value;
-      });
+  $("#btnFilter").on ("click", function ()
+   {
+     var bot = document.getElementById("bottomDateFltr");
+     var roof = document.getElementById("roofDateFltr");    //TODO: ФИЛЬТРАЦИЯ
+     if (!(bot == "" && roof == "")) {
+         if (!(bot == "" )) {
+            Application.bottomDateFltr = bot.value;
+         }
+         if (!(roof == "" ))
+            Application.roofDateFltr = roof.value;
+     }
+     Application.authorFltr = document.getElementById("authorFltr").value;
+     Application.journalFltr = document.getElementById("publFltr").value;
+     console.log(Application.authorFltr);
+     //filterSearch();
+     //Application.instancesFiltered().length;
+       /*Application.instances().filter (function (objInstance)
+       {
+           console.log(objInstance.isVisible ());
+           return (objInstance.isVisible ());
+       });*/
+   });
 
-  // $("#load-more").on ("click", function ()
-  //   {
-  //   Application.searchMore ();
-  //   });
-  
   $("#search").on ("submit", function (event)
     {
     Application.searchNew ();
