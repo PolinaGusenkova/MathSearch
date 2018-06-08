@@ -46,6 +46,7 @@
   </head>
   <body>
     <div class = "container">
+      <div id="fixedPanel">
       <div class="pane">
       <h1>
         Finding Concepts in Mathematical Formulas
@@ -61,6 +62,7 @@
                      data-content = "Please enter a search query!"
                      data-placement = "bottom"
                      data-min-length="1"
+                     data-limit-of-values = "3"
                      list="concept-list">
               <datalist id="concept-list"></datalist>
               <span class="input-group-btn">
@@ -74,17 +76,9 @@
               Examples: <a>Angle</a>, <a>Ring</a>, <a>Graph</a>, <a>Open set</a>, <a>Prime number</a>, <a>Gamma function</a>, <a>Space</a>
             </p>
             <div>
-              <label class = "checkbox-inline">
-              <input type="checkbox" id="unrelated"  value="query.isUnrelated">
-              <span>Include unrelated concepts</span>
-              </label>
-            </div>
-            <div>
           </div>
         </div>
-
           <hr>
-
           <div id = "context" data-bind = "foreach: segmentTypes">
             <label class = "checkbox-inline">
               <input type = "checkbox" data-bind = "checked: isChecked">
@@ -92,11 +86,39 @@
               <span data-bind = "slideVisible: $root.results.visible" class = "count">(<span data-bind = "text: count"></span>)</span>
             </label>
           </div>
-
         </div>
       </form>
       </div>
       <div id = "mypanel" class="panel panel-default navbar-default">
+        <label class = "filterLbl">Date: </label>
+        <input type="text" class = "filterInpt" id="bottomDateFltr">
+        <label>-</label>
+        <input type="text" class = "filterInpt" id="roofDateFltr">
+
+        <label class = "filterLbl">Author: </label>
+        <input type="text"
+               id = "authorFltr"
+               placeholder="Enter author"
+               class="flexdatalist"
+               data-placement = "bottom"
+               data-min-length="1"
+               list="author-list">
+        <datalist id="author-list"></datalist>
+
+        <label class = "filterLbl">Publisher: </label>
+        <input type="text"
+               id = "publFltr"
+               placeholder="Enter publisher"
+               class="flexdatalist"
+               data-placement = "bottom"
+               data-min-length="1"
+               list="publisher-list">
+        <datalist id="publisher-list"></datalist>
+
+        <button type = "button" id = "btnFilter"  class = "btn btn-primary">
+          Filter
+        </button>
+
         <script>
             $(document).ready(function() {
                 $('.pull-me').click(function() {
@@ -112,7 +134,8 @@
         <span data-bind = "text: errorMessage.text"></span>
       </div>
 
-      <div id = "result" data-bind = "visible: results.visible">
+
+        <div data-bind = "visible: results.visible">
       
         <h5 data-bind = "visible: instancesFiltred.count">
           <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
@@ -120,19 +143,15 @@
           (<span class = "count" data-bind = "text: instancesFiltred.count"></span>):
           <div align="right" data-bind = "visible: results.visible">
             <label  class = "checkbox-inline" >
-              <span>Sort by:</span>
-              <select class = "styledSel" name="sortbyCb"  onChange="combo(this)" >
-                <option>Date</option>
-                <option>Author</option>
+              <span>Sort by date</span>
               </select>
             </label>
-            <a id = "sortIcon"  class = "btn btn-link" type = "button" title = "Order" data-bind="click: function () { changeOrder(1) }" >
+            <a id = "sortIcon"  class = "btn btn-link" type = "button" title = "Order" >
               <i class = "fas fa-sort-amount-down"></i>
               <script>
                   $('#sortIcon').click(function() {
                       $(this).find('i').toggleClass('fas fa-sort-amount-down fas fa-sort-amount-up')
                   });
-
               </script>
             </a>
           </div>
@@ -142,10 +161,12 @@
           Can’t find <em id = "spnConceptName" data-bind = "text: query.conceptURI"></em>
           concept instances<span class = "count" data-bind = "visible: instances().length"> in the selected context</span>.
         </h5>
+        </div>
+      </div>
 
+        <div data-bind = "visible: results.visible">
 
-
-        <table data-bind = "visible: instancesFiltred.count" class = "table table-hover">
+        <table data-bind = "visible: instancesFiltred.count"  class="table table-hover">
           <thead>
             <tr>
               <th class = "notation">
@@ -180,9 +201,7 @@
             </tr>
           </tbody>
         </table>
-
       </div>
-      
     </div>
     
     <div id = "details" data-bind = "with: Details, modalOpened: (Details.status() == 'opened')" class = "modal  fade" tabindex = "-1" data-keyboard = "true">
@@ -243,15 +262,15 @@
             
             <div id = "journal" data-bind = "with: metadata, visible: metadata.status() == 'done'">
               <span data-bind = "foreach: article.authors">
-                <a data-bind = "attr: {href: url}" target = "_blank"><span data-bind = "text: name"></span><i class="fa fa-external-link"></i></a><span data-bind = "visible: isNotLast">, </span>
+                <a data-bind = "attr: {href: url}" target = "_blank"><span data-bind = "text: name"></span><i id="extL" class="fa fa-external-link"></i></a><span data-bind = "visible: isNotLast">, </span>
               </span>
               <br>
-              <a data-bind = "attr: {href: article.url}" target = "_blank"><span data-bind = "text: article.title"></span><i class="fa fa-external-link"></i></a>
-              <span class = "pdf">(<a data-bind = "attr: {href: article.pdfUrl}" target = "_blank">PDF<i class = "fa fa-external-link"></i></a>)</span>
+              <a data-bind = "attr: {href: article.url}" target = "_blank"><span data-bind = "text: article.title"></span><i id="ext" class="fa fa-external-link"></i></a>
+              <span class = "pdf">(<a data-bind = "attr: {href: article.pdfUrl}" target = "_blank">PDF<i id="extPdf" class = "fa fa-external-link"></i></a>)</span>
               <br>
               In: <em data-bind = "text: journal.title"></em>,
               <span data-bind = "text: journal.year"></span>,
-              <a data-bind = "attr: {href: journal.issueUrl}" target = "_blank">num. <span data-bind = "text: journal.issueNumber"></span><i class="fa fa-external-link"></i></a>,
+              <a data-bind = "attr: {href: journal.issueUrl}" target = "_blank">num. <span data-bind = "text: journal.issueNumber"></span><i id="extLink" class="fa fa-external-link"></i></a>,
               pp. <span data-bind = "text: article.pages"></span>
             </div>
             
@@ -286,8 +305,8 @@
       <div class = ""> 
         <p class = "navbar-text">
           &copy; <a href = "http://cll.niimm.ksu.ru" title = "Lab’s website">Computational Linguistics Laboratory</a>
-          <a href = "mailto:alik.kirillovich@gmail.com" title = "Email us"><i class="fa fa-envelope-o"></i></a>
-          at Kazan Federal University, 2014–2017
+          <a href = "mailto:alik.kirillovich@gmail.com" title = "Email us"><i id="mail" class="fa fa-envelope-o"></i></a>
+          at Kazan Federal University, 2014–2018
         </p>
 
         <ul class = "nav navbar-nav navbar-right hidden-xs">
@@ -312,7 +331,7 @@
           </li>
           <li>
             <a class = "btn btn-link" data-uv-trigger type = "button" title = "Give feedback">
-              <i class = "fa fa-comment-o"></i>
+              <i id="feedb" class = "fas fa-comment-o"></i>
             </a>
           </li>
         </ul>

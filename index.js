@@ -1,6 +1,12 @@
 var Application = new (function ()
   {
   var self = this;
+  var bottomDateFltr;
+  var roofDateFltr;
+
+  this.isUnrelated = ko.observable(false), //галочка unrelated
+  this.isAscending = ko.observable(false) //порядок сортировки
+
 
   this.config =
     {
@@ -20,8 +26,6 @@ var Application = new (function ()
     conceptURI:  ko.observable(""),
     offset: ko.observable(0),
     isAllLoaded: ko.observable(false),
-    isUnrelated: ko.observable(false),
-    isAscending: ko.observable(false)
   }
 
   this.instances = ko.observableArray([]);
@@ -101,10 +105,10 @@ var Application = new (function ()
               else
                   self.query.isAscending(false);
           }
-          console.log("here");
       }
 
   this.Details;
+
 
   var hshConcepts = [];
   this.init = function ()
@@ -630,11 +634,19 @@ $(document).ready(function()
     {
     Application.searchNew ();
     });
+
+      $("#btnFilter").on ("click", function ()
+      {
+        var bot = document.getElementById("bottomDateFltr");
+        var roof = document.getElementById("roofDateFltr");    //TODO: ФИЛЬТРАЦИЯ
+        self.bottomDateFltr = bot.value;
+        self.roofDateFltr = roof.value;
+      });
     
-  $("#load-more").on ("click", function ()
-    {
-    Application.searchMore ();
-    });
+  // $("#load-more").on ("click", function ()
+  //   {
+  //   Application.searchMore ();
+  //   });
   
   $("#search").on ("submit", function (event)
     {
@@ -667,10 +679,11 @@ $(document).ready(function()
     
   $("#details").on ("click", ".classlabel", function ()
     {
+    $('input.flexdatalist').val(ko.dataFor(this).classLabel);
     Application.searchNew (ko.dataFor(this).classLabel);
     Application.Details.status ("closed");
     });
-  
+
   $("[data-toggle=tooltip]").tooltip();
   
   (function ()

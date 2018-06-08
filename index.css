@@ -10,6 +10,24 @@ h1
   margin-bottom: 0px !important;
 }
 
+.form-group{
+  margin-bottom: 8px !important;
+}
+
+#feedb,
+#mail,
+#ext, #extPdf, #extL, #extLink{
+  font-family: fontawesome !important;
+}
+
+#fixedPanel{
+
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
 #search
   {
   background-color: #F5F5F5;
@@ -23,9 +41,9 @@ h1
   #search .flexdatalist
   {
     padding-top: 5px;
-    border-color: azure;
+    border-color: #ededed;
     border-radius: 5px;
-    border_width: 0.5px;
+    border_width: 0.4px;
     line-height: 22px;
   }
   #search .flexdatalist-multiple li
@@ -50,6 +68,7 @@ h1
   {
   font-size: smaller;
   margin-top: 0.5em;
+  margin-bottom: 1px !important;
   }
 
 #examples a
@@ -68,9 +87,10 @@ h1
 
 #search hr
   {
-  margin-top: 7px;
-  margin-bottom: 5px;
+  margin-top: 0px !important;
+  margin-bottom: 2px;
   }
+
 
 #context .checkbox-inline+.checkbox-inline
   {
@@ -78,10 +98,10 @@ h1
   }
 #context .checkbox-inline
   {
-  width: 9em;
+  width: 10em;
   /*border: 1px solid red;*/
-  padding-top: 7px;
-  padding-bottom: 4px;
+  padding-top: 4px;
+  padding-bottom: 2px;
   }
 
 label.checkbox-inline
@@ -91,7 +111,7 @@ label.checkbox-inline
   -ms-user-select: none;
   font-family: "Cairo";
   font-weight: normal;
-  font-size: 16px;
+  font-size: 14px;
   }
 
 #context label .count
@@ -115,9 +135,6 @@ select:focus
   box-shadow: 0 0 3pt 2pt white;
 }
 
-
-
-
 h5
   {
   font-family: "Cairo" !important;
@@ -133,6 +150,12 @@ h5
   {
   vertical-align: middle;
   }
+
+#result table tr:h
+{
+
+}
+
 #result table td.context
   {
   font-size: smaller;
@@ -140,15 +163,6 @@ h5
 #result table td .show-details
   {
   float: right;
-  }
-
-#load-more-wrapper
-  {
-  text-align: center;
-  }
-#load-more
-  {
-  width: 15em;
   }
 
 #formula
@@ -198,6 +212,7 @@ h5
   {
   opacity: 0.95;
   margin-bottom: -5px;
+    z-index: 1;
   }
 
 #footer .nav i.fa
@@ -231,6 +246,14 @@ h5
   border-top-left-radius: 4px  !important;
   margin-left: 10px !important;
 }
+
+#btnFilter{
+  display: inline-block;
+  font-size: 16px;
+  height: 25px;
+  padding: 0px 3px 0px 3px;
+}
+
 
 @-webkit-keyframes anim1 {from {background-color: lightyellow ;} to {}}
         @keyframes anim1 {from {background-color: lightyellow ;} to {}}
@@ -276,6 +299,8 @@ body::-webkit-scrollbar-thumb:active
 
 .cd-top {
   display: inline-block;
+   position:absolute;
+    z-index: 10;
   height: 30px;
   width: 30px;
   position: fixed;
@@ -336,8 +361,11 @@ body::-webkit-scrollbar-thumb:active
 #mypanel {
   margin-top: 0px;
   margin-bottom: 0px !important;
-  height: 50px;
+  height: 44px;
   display: none;
+    padding-top: 7px;
+    padding-bottom: 7px;
+
 }
 
 #mypanel .panel-body
@@ -381,3 +409,24 @@ body::-webkit-scrollbar-thumb:active
   text-align: center;
 }
 
+#bottomDateFltr, #roofDateFltr {
+    width: 50px;
+}
+
+.filterLbl{
+    font-family: "Cairo";
+    font-weight: normal;
+    font-size: 16px;
+    text-decoration: none;
+    padding-left: 15px;
+}
+
+#mypanel .filterInpt,
+#authorFltr-flexdatalist,
+#publFltr-flexdatalist{
+    border-color: #ededed; !important;
+    border-radius: 3px; !important;
+    border_width: .05px; !important;
+    margin-left: 5px;
+  padding-left: 3px;
+}
