@@ -367,7 +367,6 @@ body::-webkit-scrollbar-thumb:active
     padding-top: 7px;
     padding-bottom: 7px;
   padding-right: 15px;
-
 }
 
 #mypanel .panel-body
@@ -418,9 +417,9 @@ body::-webkit-scrollbar-thumb:active
 .filterLbl{
     font-family: "Cairo";
     font-weight: normal;
-    font-size: 16px;
+    font-size: 14px;
     text-decoration: none;
-    padding-left: 15px;
+    padding-left: 2%;
 }
 
 #mypanel .filterInpt,
@@ -431,6 +430,10 @@ body::-webkit-scrollbar-thumb:active
     border_width: .05px; !important;
     margin-left: 5px;
   padding-left: 3px;
+}
+
+#authorFltr-flexdatalist{
+    width: 15%;
 }
 
 #publFltr-flexdatalist{

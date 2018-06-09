@@ -52,8 +52,6 @@ var Application = new (function ()
     self.segmentTypes [objSegmentType.uri] = objSegmentType;
     })
 
-      this.df = new DateFilter();
-
   this.loadingIndicator =
     {
     loading: ko.computed(function()
