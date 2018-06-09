@@ -25,9 +25,8 @@ var Application = new (function ()
   this.query =
     {
     conceptURI:  ko.observable(""),
-    offset: ko.observable(0),
+    offset:      ko.observable(0),
     isAllLoaded: ko.observable(false),
-    isUnrelated: ko.observable(false), //галочка unrelated
     isAscending: ko.observable(false) //порядок сортировки
   }
 

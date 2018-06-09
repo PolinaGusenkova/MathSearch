@@ -16,7 +16,8 @@ h1
 
 #feedb,
 #mail,
-#ext, #extPdf, #extL, #extLink{
+#ext, #extPdf, #extL, #extLink,
+#mail{
   font-family: fontawesome !important;
 }
 
@@ -150,11 +151,6 @@ h5
   {
   vertical-align: middle;
   }
-
-#result table tr:h
-{
-
-}
 
 #result table td.context
   {
