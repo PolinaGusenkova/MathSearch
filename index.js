@@ -16,7 +16,9 @@ var Application = new (function ()
 
   this.status = ko.observable("loading"); //loading, ready, result, loadingmore, error
 
-  this.concepts = ko.observableArray([]);
+      this.concepts = ko.observableArray([]);
+      this.authorsList = ko.observableArray([]);
+      this.journals = ko.observableArray([]);
 
   this.conceptURI = null;
 
@@ -98,7 +100,9 @@ var Application = new (function ()
   this.Details;
 
 
-  var hshConcepts = [];
+      var hshConcepts = [];
+      var hshAuthors = [];
+      var hshJournals = [];
   this.init = function ()
     {
     this.get
@@ -134,14 +138,76 @@ var Application = new (function ()
           arConcepts [arConcepts.length] = strKey;
           hshConcepts [strKey] = strConceptURI;
           }
-        })
+        });
           self.concepts(arConcepts);
           var search_list=document.getElementById("concept-list");
           search_list.innerHTML = str;
-          console.log(self.query.isUnrelated);
-      self.status ("ready");
+      //self.status ("ready");
+      });
 
-      })
+    this.get
+        (
+            "PREFIX akt: <http://www.aktors.org/ontology/portal#> " +
+            "          SELECT ?author, MIN (?name) AS ?authorname   " +
+            "           WHERE       " +
+            "          {       " +
+            "          ?author akt:full-name ?name .   " +
+            "          }    GROUP BY ?author"
+        )
+            .then (function (objResult)
+            {
+                var str='';
+                var arAuthors = [];
+                objResult.results.bindings.forEach (function (objBinding)
+                {
+                    var strAuthorURI = objBinding.author.value;
+                    var strKey;
+                    if (objBinding.authorname) strKey = objBinding.authorname.value;
+                    if (!hshAuthors [strKey])
+                    {
+                        str += '<option value="'+strKey+'" />';
+                        arAuthors [arAuthors.length] = strKey;
+                        hshAuthors [strKey] = strAuthorURI;
+                    }
+                });
+                console.log(str);
+                self.authorsList(arAuthors);
+                var author_list=document.getElementById("author-list");
+                author_list.innerHTML = str;
+                self.status ("ready");
+            });
+
+        this.get
+        (
+            "PREFIX akt: <http://www.aktors.org/ontology/portal#>  " +
+            "SELECT MIN (?journal) AS ?jrnl, ?journaltitle     " +
+            "                                   WHERE         " +
+            "                                  {         " +
+            "      ?article akt:included-in-publication ?journal. " +
+            "                                  ?journal akt:has-title ?journaltitle.       " +
+            "                                  }    GROUP BY ?journaltitle"
+        )
+            .then (function (objResult)
+            {
+                var str='';
+                var arJournals = [];
+                objResult.results.bindings.forEach (function (objBinding)
+                {
+                    var strJournalURI = objBinding.jrnl.value;
+                    var strKey;
+                    if (objBinding.journaltitle) strKey = objBinding.journaltitle.value;
+                    if (!hshJournals [strKey])
+                    {
+                        str += '<option value="'+strKey+'" />';
+                        arJournals [arJournals.length] = strKey;
+                        hshJournals [strKey] = strJournalURI;
+                    }
+                });
+                self.journals(arJournals);
+                var journal_list=document.getElementById("journal-list");
+                journal_list.innerHTML = str;
+                self.status ("ready");
+            })
     ["catch"] (function (e)
       {
       console.log (e);
@@ -150,7 +216,7 @@ var Application = new (function ()
       })
     }
 
-  this.searchNew = function (strConceptURI)
+  this.searchNew = function (isFiltered, strConceptURI)
     {
     var str = $('input.flexdatalist').val().split(',');
     for (var i = 0; i < str.length; i++) {
@@ -167,22 +233,13 @@ var Application = new (function ()
     self.conceptURI = strConceptURI;
 
     if (self.status () == "loading") return;
-
     self.status ("loading");
+    //self.query.offset (0);
 
-    self.query.offset (0);
-
-    this.search (strConceptURI, 0).then (function (arInstances)
-      {
-        self.instances(arInstances);
-/*
-          arInstances.forEach (function (objInstance)
-          {
-              self.instances.push (objInstance);
-          });
-*/
-      self.status ("result");
-      })
+            this.search(strConceptURI, isFiltered).then(function (arInstances) {
+                self.instances(arInstances);
+                self.status("result");
+            })
     ["catch"] (function (e)
       {
       console.log (e);
@@ -215,8 +272,9 @@ var Application = new (function ()
       })
     }
 */
-  this.search = function (strConceptURI, intOffset)
+  this.search = function (strConceptURI, isFiltered)
     {
+      console.log(isFiltered);
     self.query.conceptURI (strConceptURI.toString().replace(',', ', '));
     var len = self.conceptURI.length;
           //"define input:inference 'ontomath'"+
@@ -224,19 +282,41 @@ var Application = new (function ()
               "PREFIX akt: <http://www.aktors.org/ontology/portal#> "+
               "SELECT DISTINCT ?entity ?formula ?year " +
                     "(sql:GROUP_CONCAT(?segmentType, \" \") AS ?segments) ?formulaLatexSource ";
+          if (isFiltered) {
+            if (self.journalFltr != "") query += "?journaltitle ";
+            if (self.authorFltr != "") query += "?authorname ";
+          }
         for (var i = 0; i < len; i++) {
           query += "?notationLatexSource"+i+" ";
         }
         query += "WHERE { " +
             "{ " +
             "SELECT DISTINCT ?entity ?formula ?year ?segmentType ?formulaLatexSource ";
+        if (isFiltered) {
+            if (self.journalFltr != "") query += "?journaltitle ";
+            if (self.authorFltr != "") query += "?authorname ";
+        }
         for (var i = 0; i < len; i++) {
             query += "?notationLatexSource"+i+" ";
         }
         query += "WHERE  { " +
             " ?article moc:hasSegment ?segment; rdf:type akt:Article-Reference; akt:included-in-publication ?journal; akt:has-author ?author." +
-            "?journal akt:has-date ?year. " +
-            " ?segment rdf:type ?segmentType;     moc:mentions ?entity.     " +
+            "?journal akt:has-title ?journaltitle; akt:has-date ?year. ";
+        if (isFiltered && self.authorFltr != "") {
+            query += "              ?article akt:has-author ?author.    " +
+            "              {      " +
+            "               SELECT ?author, MIN (?name) AS ?authorname     " +
+            "                WHERE        " +
+            "               {        " +
+            "               ?author akt:full-name ?name .        " +
+            "               }    GROUP BY ?author      " +
+            "               }   " +
+                "FILTER (str(?authorname) = '"+self.authorFltr+"')";
+        }
+        if (isFiltered && self.journalFltr != "") {
+          query +=  "FILTER (str(?journaltitle) = '"+self.journalFltr+"')";
+        }
+            query += " ?segment rdf:type ?segmentType;     moc:mentions ?entity.     " +
             "       ?entity moc:hasNotation ?formula.    " +
             "       ?formula a moc:Formula; ";
         for (var i = 0; i < len; i++) {
@@ -256,10 +336,17 @@ var Application = new (function ()
                 query += " str (?class"+i+") = '" + hshConcepts [self.conceptURI[j]] + "'  ) ";
             }
         }
+        if (isFiltered) {
+            query += "FILTER (str(?year) >= 'http://mathnet.ru/Year"+self.bottomDateFltr+"' && str(?year) <= 'http://mathnet.ru/Year"+self.roofDateFltr+"')";
+        }
         query += "FILTER ( str(?segmentType) != 'http://salt.semanticauthoring.org/ontologies/sdo#Section') " +
                 " } " +
             "} " +
             "} GROUP BY ?formula ?entity ?formulaLatexSource ?year ";
+        if (isFiltered) {
+            if (self.journalFltr != "") query += "?journaltitle ";
+            if (self.authorFltr != "") query += "?authorname ";
+        }
         for (var i = 0; i < len; i++) {
             query += "?notationLatexSource"+i+" ";
         }
@@ -294,6 +381,8 @@ var Application = new (function ()
       return (arInstances);
       })
     }
+
+
 
   this.mj = function (elem)
     {
@@ -643,23 +732,26 @@ $(document).ready(function()
   
   $("#btnGo").on ("click", function ()
     {
-    Application.searchNew ();
+    Application.searchNew (false);
     });
 
   $("#btnFilter").on ("click", function ()
    {
+       Application.bottomDateFltr = "0";
+       Application.roofDateFltr = "3000";
      var bot = document.getElementById("bottomDateFltr");
      var roof = document.getElementById("roofDateFltr");    //TODO: ФИЛЬТРАЦИЯ
-     if (!(bot == "" && roof == "")) {
-         if (!(bot == "" )) {
+     if (!(bot.value == '' && roof.value == '')) {
+         if (bot.value != '' ) {
             Application.bottomDateFltr = bot.value;
          }
-         if (!(roof == "" ))
-            Application.roofDateFltr = roof.value;
+         if (roof.value != '' ) {
+             Application.roofDateFltr = roof.value;
+         }
      }
      Application.authorFltr = document.getElementById("authorFltr").value;
      Application.journalFltr = document.getElementById("publFltr").value;
-     console.log(Application.authorFltr);
+     Application.searchNew (true);
      //filterSearch();
      //Application.instancesFiltered().length;
        /*Application.instances().filter (function (objInstance)
@@ -671,7 +763,7 @@ $(document).ready(function()
 
   $("#search").on ("submit", function (event)
     {
-    Application.searchNew ();
+    Application.searchNew (false);
     event.preventDefault();
     }); 
   
@@ -695,7 +787,7 @@ $(document).ready(function()
   $("#examples a").on ("click", function ()
     {
         $('input.flexdatalist').val($(this).text());
-    Application.searchNew ($(this).text());
+    Application.searchNew (false, $(this).text());
     });
 
   $("#sortIcon").on ("click", function () {
@@ -718,7 +810,7 @@ $(document).ready(function()
   $("#details").on ("click", ".classlabel", function ()
     {
     $('input.flexdatalist').val(ko.dataFor(this).classLabel);
-    Application.searchNew (ko.dataFor(this).classLabel);
+    Application.searchNew (false, ko.dataFor(this).classLabel);
     Application.Details.status ("closed");
     });
 
