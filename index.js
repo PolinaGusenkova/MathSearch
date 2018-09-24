@@ -173,7 +173,7 @@ var Application = new (function ()
                 self.authorsList(arAuthors);
                 var author_list=document.getElementById("author-list");
                 author_list.innerHTML = str;
-                self.status ("ready");
+               // self.status ("ready");
             });
 
         this.get
@@ -278,8 +278,8 @@ var Application = new (function ()
     var len = self.conceptURI.length;
           //"define input:inference 'ontomath'"+
           var query = "PREFIX moc: <http://cll.niimm.ksu.ru/ontologies/mocassin#> " +
-              "PREFIX akt: <http://www.aktors.org/ontology/portal#> "+
-              "SELECT DISTINCT ?entity ?formula ?year " +
+              "PREFIX akt: <http://www.aktors.org/ontology/portal#> ";//+
+         /*     "SELECT DISTINCT ?entity ?formula ?year " +
                     "(sql:GROUP_CONCAT(?segmentType, \" \") AS ?segments) ?formulaLatexSource ";
           if (isFiltered) {
             if (self.journalFltr != "") query += "?journaltitle ";
@@ -287,10 +287,10 @@ var Application = new (function ()
           }
         for (var i = 0; i < len; i++) {
           query += "?notationLatexSource"+i+" ";
-        }
-        query += "WHERE { " +
-            "{ " +
-            "SELECT DISTINCT ?entity ?formula ?year ?segmentType ?formulaLatexSource ";
+        }*/
+        query += //"WHERE { " +
+            //"{ " +
+            "SELECT DISTINCT ?entity ?formula ?year (sql:GROUP_CONCAT(?segmentType, \" \") AS ?segments) ?formulaLatexSource ";
         if (isFiltered) {
             if (self.journalFltr != "") query += "?journaltitle ";
             if (self.authorFltr != "") query += "?authorname ";
@@ -335,12 +335,21 @@ var Application = new (function ()
                 query += " str (?class"+i+") = '" + hshConcepts [self.conceptURI[j]] + "'  ) ";
             }
         }
+        /*for (var i = 0; i < len; i++) {
+            query += "FILTER (";
+            for (var j = 0; j < len; j++) {
+                if (j < len-1)
+                    query += " str (?class"+j+") = '" + hshConcepts [self.conceptURI[i]] + "' ||";
+                else
+                    query += " str (?class"+j+") = '" + hshConcepts [self.conceptURI[i]] + "'  ) ";
+            }
+        }*/
         if (isFiltered) {
             query += "FILTER (str(?year) >= 'http://mathnet.ru/Year"+self.bottomDateFltr+"' && str(?year) <= 'http://mathnet.ru/Year"+self.roofDateFltr+"')";
         }
         query += "FILTER ( str(?segmentType) != 'http://salt.semanticauthoring.org/ontologies/sdo#Section') " +
-                " } " +
-            "} " +
+            //     " } " +
+            // "} " +
             "} GROUP BY ?formula ?entity ?formulaLatexSource ?year ";
         if (isFiltered) {
             if (self.journalFltr != "") query += "?journaltitle ";
