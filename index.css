@@ -407,7 +407,7 @@ body::-webkit-scrollbar-thumb:active
 }
 
 #bottomDateFltr, #roofDateFltr {
-    width: 5%;
+    width: 7%;
 }
 
 .filterLbl{
@@ -433,5 +433,5 @@ body::-webkit-scrollbar-thumb:active
 }
 
 #publFltr-flexdatalist{
-  width: 45%;
+  width: 27%;
 }
