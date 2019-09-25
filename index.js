@@ -496,6 +496,7 @@ function Instance ()
               for (var i = 0; i <  segs.length; i++) {
                   this.segmentList.segmentArr.push(this.segmentType( segs[i]));
               }
+              this.segmentList.segmentArr = [...new Set(this.segmentList.segmentArr)];
           }, this, {deferEvaluation: true}),
           segmentShow:   ko.computed(function ()
             {
